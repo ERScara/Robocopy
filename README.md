@@ -18,6 +18,7 @@ The goal is to simplify the use of Robocopy as both an educational and practical
 
 ## Warning! 
 This application may become unresponsive when dealing with multiple copies or large files. Please bear this in mind.
+This is totally normal, please be patient and wait.
 
 ## Licence
 Distributed under the MIT Licence. Contributions are welcome.
