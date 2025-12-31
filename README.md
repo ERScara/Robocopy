@@ -16,5 +16,8 @@ This project aims to make Robocopy more accessible to students, professionals, a
 ## Purpose
 The goal is to simplify the use of Robocopy as both an educational and practical resource, demonstrating how a powerful command‑line tool can be integrated into a user‑friendly application.
 
+## Warning! 
+This application may become unresponsive when dealing with multiple copies or large files. Please bear this in mind.
+
 ## Licence
 Distributed under the MIT Licence. Contributions are welcome.
