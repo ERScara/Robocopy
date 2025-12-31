@@ -4,26 +4,30 @@
 
 using namespace System::Drawing;
 using namespace System::IO;
+using namespace System::Globalization;
+using namespace System::Threading;
 using namespace System::Threading::Tasks;
+using namespace System::Resources;
 using namespace System::Diagnostics;
 
 RoboCopyForm::RoboCopyForm()
 {
 	InitForm();
+	Setup_Menu();
 }
 
 void RoboCopyForm::InitForm()
 {
 	this->Text = "Robocopy";
-	this->Size = System::Drawing::Size(640, 480);
+	this->Size = System::Drawing::Size(715, 500);
 	this->StartPosition = FormStartPosition::CenterScreen;
 	this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedDialog;
 	this->MaximizeBox = false;
 
 	TabControl^ tabCtrl = gcnew TabControl();
 	tabCtrl->Cursor = Cursors::Default;
-	tabCtrl->Location = Point(5, 5);
-	tabCtrl->Size = Drawing::Size(620, 450);
+	tabCtrl->Location = Point(3, 5);
+	tabCtrl->Size = Drawing::Size(690, 430);
 
 	tstart = gcnew TabPage("Start");
 	lblExpl = gcnew Label();
@@ -31,11 +35,11 @@ void RoboCopyForm::InitForm()
 	lblExpl->Width = 260;
 	lblExpl->Font = gcnew System::Drawing::Font("Verdana", 9.5, FontStyle::Italic);
 	lblExpl->AutoSize = true;
-	lblExpl->Location = Point(10, 40);
+	lblExpl->Location = Point(6, 40);
 	tstart->Controls->Add(lblExpl);
 
 	Expl = gcnew Label();
-	Expl->Text = "/MIR: Mirrors the complete tree: copy and delete files so the destiny equals the origin.\n/COPY:DATSO: Enables you to copy data, attributes,TimeStamps,Security and Owner.\n/E: Copies subdirectories but not the empty ones.\n/S: Copies subdirectories except empty ones.\n/R:3: Numbrer of retries (3).\nW:5: Latency time between retries (5).";
+	Expl->Text = "/MIR: Mirrors the complete tree: copy and delete files so the destiny equals the origin.\n/COPY:DATSO: Enables you to copy data, attributes, timestamps, security and owner.\n/E: Copies subdirectories but not the empty ones.\n/S: Copies subdirectories except empty ones.\n/R:3: Numbrer of retries (3).\n/W:5: Latency time between retries (5).";
 	Expl->Location = Point(20, 190);
 	Expl->Size = Drawing::Size(200, 150);
 	tstart->Controls->Add(Expl);
@@ -69,23 +73,23 @@ void RoboCopyForm::InitForm()
 	btnClose->Cursor = Cursors::Hand;
 	btnClose->Click += gcnew EventHandler(this, &RoboCopyForm::Close_Click);
 	btnClose->Text = "Close";
-	btnClose->Location = Point(500, 380);
+	btnClose->Location = Point(590, 360);
 	tstart->Controls->Add(btnClose);
 
 	lblOr = gcnew Label();
-	lblOr->Text = "Origin path: ";
+	lblOr->Text = "Origin Path: ";
 	lblOr->Width = 260;
 	lblOr->Font = gcnew System::Drawing::Font("Times", 10, FontStyle::Regular);
 	lblOr->AutoSize = true;
-	lblOr->Location = Point(66, 100);
+	lblOr->Location = Point(46, 100);
 	tstart->Controls->Add(lblOr);
 
 	lblDest = gcnew Label();
-	lblDest->Text = "Destiny path: ";
+	lblDest->Text = "Destiny Path: ";
 	lblDest->Width = 260;
 	lblDest->Font = gcnew System::Drawing::Font("Times", 10, FontStyle::Regular);
 	lblDest->AutoSize = true;
-	lblDest->Location = Point(60, 140);
+	lblDest->Location = Point(40, 140);
 	tstart->Controls->Add(lblDest);
 
 	txtOrigin = gcnew TextBox();
@@ -170,8 +174,8 @@ void RoboCopyForm::InitForm()
 
 	tp = gcnew TabPage("Log");
 	richTextBox = gcnew RichTextBox();
-	richTextBox->Location = Point(20, 20);
-	richTextBox->Size = Drawing::Size(550, 380);
+	richTextBox->Location = Point(50, 15);
+	richTextBox->Size = Drawing::Size(570, 380);
 	richTextBox->ReadOnly = true;
 	richTextBox->ScrollBars = RichTextBoxScrollBars::Vertical;
 	
@@ -267,4 +271,157 @@ void RoboCopyForm::DoCopy(String^ origin, String^ destiny, String^ options) {
 	}
 }
 
+void RoboCopyForm::Setup_Menu(void)
+{
+	menuBar = gcnew MainMenu();
+	fileMenu = gcnew MenuItem("&File");
+	this->menuBar->MenuItems->Add(fileMenu);
+	Item1 = gcnew MenuItem("&About...");
+	Item1->Click += gcnew EventHandler(this, &RoboCopyForm::MenuItem_About_Click);
+	fileMenu->MenuItems->Add(Item1);
+	Item2 = gcnew MenuItem("&Exit");
+	Item2->Click += gcnew EventHandler(this, &RoboCopyForm::MenuItem_Exit_Click);
+	fileMenu->MenuItems->Add(Item2);
+	settingsMenu = gcnew MenuItem("&Settings");
+	this->menuBar->MenuItems->Add(settingsMenu);
+	submenu1 = gcnew MenuItem("&Language");
+	settingsMenu->MenuItems->Add(submenu1);
+	Item1_1 = gcnew MenuItem("&English");
+	Item1_1->Click += gcnew EventHandler(this, &RoboCopyForm::MenuItem_English_Click);
+	Item1_1->Checked = true;
+	Item1_2 = gcnew MenuItem("&Spanish");
+	Item1_2->Checked = false;
+	Item1_2->Click += gcnew EventHandler(this, &RoboCopyForm::MenuItem_Spanish_Click);
 
+	submenu1->MenuItems->Add(Item1_1);
+	submenu1->MenuItems->Add(Item1_2);
+
+	this->Menu = menuBar;
+}
+
+void RoboCopyForm::MenuItem_About_Click(Object^ pSender, EventArgs^ Args)
+{
+	Form^ aboutForm = gcnew Form();
+	aboutForm->Text = L"About Robocopy";
+	aboutForm->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedDialog;
+	aboutForm->Size = System::Drawing::Size(370, 160);
+	aboutForm->BackColor = System::Drawing::Color::LightGray;
+	aboutForm->MaximizeBox = false;
+	aboutForm->MinimizeBox = false;
+	aboutForm->StartPosition = FormStartPosition::CenterScreen;
+
+	Label^ label1 = gcnew Label();
+	label1->Text = L"Made by Esteban Rodolfo Scaramuzza, 2025.";
+	label1->Size = System::Drawing::Size(label1->PreferredWidth, label1->PreferredHeight);
+	label1->Location = Point(90, 30);
+
+	Label^ label2 = gcnew Label();
+	Bitmap^ iconBitmap = gcnew Bitmap("RCGUI2.bmp");
+	label2->Image = iconBitmap;
+	label2->Size = System::Drawing::Size(48, 48);
+	label2->Location = Point(15, 20);
+	label2->AutoSize = false;
+	label2->ImageAlign = ContentAlignment::MiddleLeft;
+
+	aboutForm->Controls->Add(label1);
+	aboutForm->Controls->Add(label2);
+
+	OKButton = gcnew Button();
+	OKButton->Text = L"OK";
+	OKButton->Size = System::Drawing::Size(40, 25);
+	OKButton->BackColor = System::Drawing::Color::White;
+	OKButton->Cursor = Cursors::Hand;
+	OKButton->Location = Point(290, 85);
+
+	OKButton->Click += gcnew EventHandler(this, &RoboCopyForm::OKButton_Cliked);
+	aboutForm->Controls->Add(OKButton);
+	aboutForm->ShowDialog();
+}
+
+void RoboCopyForm::OKButton_Cliked(Object^ pSender, EventArgs^ Args)
+{
+	Button^ clickedButton = dynamic_cast<Button^>(pSender);
+	Form^ parentForm = clickedButton->FindForm();
+
+	parentForm->Close();
+}
+
+void RoboCopyForm::MenuItem_Exit_Click(Object^ pSender, EventArgs^ Args)
+{
+	this->Close();
+}
+
+
+void RoboCopyForm::MenuItem_English_Click(Object^ pSender, EventArgs^ Args) {
+	Item1_1->Checked = true;
+	Item1_2->Checked = false;
+
+	CultureInfo^ englishCulture = gcnew CultureInfo("en-GB");
+
+	Thread::CurrentThread->CurrentCulture = englishCulture;
+	Thread::CurrentThread->CurrentUICulture = englishCulture;
+	AppSettings^ settings = gcnew AppSettings();
+	settings->InitializeMenu();
+	if (resManager == nullptr) {
+		resManager = gcnew ResourceManager("Robocopy.English", Assembly::GetExecutingAssembly());
+	}
+	this->Text = resManager->GetString("Form.Text", englishCulture);
+
+	fileMenu->Text = resManager->GetString("MainMenu.Text", englishCulture);
+	Item1->Text = resManager->GetString("Item1.Text", englishCulture);
+	Item2->Text = resManager->GetString("Item2.Text", englishCulture);
+	settingsMenu->Text = resManager->GetString("Settings.Text", englishCulture);
+	submenu1->Text = resManager->GetString("SMenu.Text", englishCulture);
+	Item1_1->Text = resManager->GetString("I1.Text", englishCulture);
+	Item1_2->Text = resManager->GetString("I2.Text", englishCulture);
+	lblExpl->Text = resManager->GetString("lblExpl.Text", englishCulture);
+	Expl->Text = resManager->GetString("Expl.Text", englishCulture);
+	btnClose->Text = resManager->GetString("BtnClose.Text", englishCulture);
+	grbox->Text = resManager->GetString("GrpBox.Text", englishCulture);
+	lblOr->Text = resManager->GetString("LblOr.Text", englishCulture);
+	lblDest->Text = resManager->GetString("LblDest.Text", englishCulture);
+	btnCopy->Text = resManager->GetString("btnCopy.Text", englishCulture);
+	btnExOr->Text = resManager->GetString("btnExOr.Text", englishCulture);
+	btnExDes->Text = resManager->GetString("btnExDes.Text", englishCulture);
+	tstart->Text = resManager->GetString("tstart.Text", englishCulture);
+	tp->Text = resManager->GetString("tp.Text", englishCulture);
+
+	AppSettings::SaveLanguage("en-GB");
+}
+
+void RoboCopyForm::MenuItem_Spanish_Click(Object^ pSender, EventArgs^ Args) {
+	Item1_1->Checked = false;
+	Item1_2->Checked = true;
+
+	CultureInfo^ spanishCulture = gcnew CultureInfo("es-ES");
+
+	Thread::CurrentThread->CurrentCulture = spanishCulture;
+	Thread::CurrentThread->CurrentUICulture = spanishCulture;
+	AppSettings^ settings = gcnew AppSettings();
+	settings->InitializeMenu();
+	if (resManager == nullptr) {
+		resManager = gcnew ResourceManager("Robocopy.Español", Assembly::GetExecutingAssembly());
+	}
+	this->Text = resManager->GetString("Form.Text", spanishCulture);
+
+	fileMenu->Text = resManager->GetString("MainMenu.Text", spanishCulture);
+	Item1->Text = resManager->GetString("Item1.Text", spanishCulture);
+	Item2->Text = resManager->GetString("Item2.Text", spanishCulture);
+	settingsMenu->Text = resManager->GetString("Settings.Text", spanishCulture);
+	submenu1->Text = resManager->GetString("SMenu.Text", spanishCulture);
+	Item1_1->Text = resManager->GetString("I1.Text", spanishCulture);
+	Item1_2->Text = resManager->GetString("I2.Text", spanishCulture);
+	lblExpl->Text = resManager->GetString("lblExpl.Text", spanishCulture);
+	Expl->Text = resManager->GetString("Expl.Text", spanishCulture);
+	btnClose->Text = resManager->GetString("BtnClose.Text", spanishCulture);
+	grbox->Text = resManager->GetString("GrpBox.Text", spanishCulture);
+	lblOr->Text = resManager->GetString("LblOr.Text", spanishCulture);
+	lblDest->Text = resManager->GetString("LblDest.Text", spanishCulture);
+	btnCopy->Text = resManager->GetString("btnCopy.Text", spanishCulture);
+	btnExOr->Text = resManager->GetString("btnExOr.Text", spanishCulture);
+	btnExDes->Text = resManager->GetString("btnExDes.Text", spanishCulture);
+	tstart->Text = resManager->GetString("tstart.Text", spanishCulture);
+	tp->Text = resManager->GetString("tp.Text", spanishCulture);
+
+	AppSettings::SaveLanguage("es-ES");
+}

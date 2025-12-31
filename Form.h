@@ -7,13 +7,33 @@ using namespace System;
 using namespace System::IO;
 using namespace System::Threading::Tasks;
 using namespace System::Drawing;
+using namespace System::Resources;
+using namespace System::Reflection;
 using namespace System::ComponentModel;
 using namespace System::Windows::Forms;
+
+public ref class AppSettings {
+public:
+	static String^ LanguageCode = "en-ES";
+	static void SaveLanguage(String^ code) {
+		LanguageCode = code;
+	}
+	static String^ LoadLanguage() {
+		return LanguageCode;
+	}
+	ResourceManager^ resManager;
+	Void InitializeMenu() {
+		if (resManager == nullptr) {
+			resManager = gcnew ResourceManager("Robocopy.Español", Assembly::GetExecutingAssembly());
+		}
+	}
+};
 
 ref class RoboCopyForm :public Form {
 public:
 	RoboCopyForm();
 	void InitForm();
+	void Setup_Menu();
 private:
 	Button^ btnExOr;
 	Button^ btnExDes;
@@ -22,6 +42,15 @@ private:
 	Label^ lblOr;
 	Label^ lblDest;
 	Label^ Expl;
+	MainMenu^ menuBar;
+	MenuItem^ fileMenu;
+	MenuItem^ settingsMenu;
+	MenuItem^ submenu1;
+	MenuItem^ Item1_1;
+	MenuItem^ Item1_2;
+	MenuItem^ Item1;
+	MenuItem^ Item2;
+	Button^ OKButton;
 	GroupBox^ grbox;
 	CheckBox^ cbMir;
 	CheckBox^ cbE;
@@ -32,6 +61,7 @@ private:
 	Label^ lblExpl;
 	ProgressBar^ pb1;
 	RichTextBox^ richTextBox;
+	ResourceManager^ resManager;
 	TabPage^ tp;
 	TabPage^ tstart;
 	TextBox^ txtOrigin;
@@ -39,6 +69,11 @@ private:
 protected:
 	void btnCopy_Click(Object^ pSender, EventArgs^ Args);
 	void Close_Click(Object^ pSender, EventArgs^ Args);
+	void MenuItem_Spanish_Click(Object^ pSender, EventArgs^ Args);
+	void MenuItem_English_Click(Object^ pSender, EventArgs^ Args);
+	void MenuItem_About_Click(Object^ pSender, EventArgs^ Args);
+	void MenuItem_Exit_Click(Object^ pSender, EventArgs^ Args);
+	void OKButton_Cliked(Object^ pSender, EventArgs^ Args);
 	void btnOrigin_Click(Object^ pSender, EventArgs^ Args) {
 		FolderBrowserDialog^ fbd = gcnew FolderBrowserDialog();
 		if (fbd->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
