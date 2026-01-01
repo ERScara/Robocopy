@@ -148,7 +148,7 @@
     <value>Buscar...</value>
   </data>
   <data name="Expl.Text" xml:space="preserve">
-    <value>/MIR: Refleja el árbol completo: copia y elimina archivos para que el destino sea igual al origen. /COPY:DATSO: Permite copiar datos, atributos, marcas de tiempo, seguridad y propietario. /E: Copia subdirectorios, pero no los que están vacíos. /S: Copia subdirectorios, excepto los que están vacíos. /R:3: Número de reintentos (3). /W:5: Tiempo de latencia entre reintentos (5).</value>
+    <value>/MIR: Refleja el árbol completo: copia y elimina archivos para que el destino sea igual al origen. /COPY:DATSO: Permite copiar datos, atributos, marcas de tiempo, seguridad y propietario. /E: Copia subdirectorios, incluyendo los que están vacíos. /S: Copia subdirectorios, excepto los que están vacíos. /R:3: Número de reintentos (3). /W:5: Tiempo de latencia entre reintentos (5).</value>
   </data>
   <data name="BtnClose.Text" xml:space="preserve">
     <value>Cerrar</value>

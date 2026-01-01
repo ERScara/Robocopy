@@ -39,7 +39,7 @@ void RoboCopyForm::InitForm()
 	tstart->Controls->Add(lblExpl);
 
 	Expl = gcnew Label();
-	Expl->Text = "/MIR: Mirrors the complete tree: copy and delete files so the destiny equals the origin.\n/COPY:DATSO: Enables you to copy data, attributes, timestamps, security and owner.\n/E: Copies subdirectories but not the empty ones.\n/S: Copies subdirectories except empty ones.\n/R:3: Numbrer of retries (3).\n/W:5: Latency time between retries (5).";
+	Expl->Text = "/MIR: Mirrors the complete tree: copy and delete files so the destiny equals the origin.\n/COPY:DATSO: Enables you to copy data, attributes, timestamps, security and owner.\n/E: Copies subdirectories, including empty ones.\n/S: Copies subdirectories, except empty ones.\n/R:3: Numbrer of retries (3).\n/W:5: Latency time between retries (5).";
 	Expl->Location = Point(20, 190);
 	Expl->Size = Drawing::Size(200, 150);
 	tstart->Controls->Add(Expl);

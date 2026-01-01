@@ -130,7 +130,7 @@
     <value>Browse...</value>
   </data>
   <data name="Expl.Text" xml:space="preserve">
-    <value>/MIR: Mirrors the complete tree: copy and delete files so the destiny equals the origin. /COPY:DATSO: Enables you to copy data, attributes, timestamps, security and owner. /E: Copies subdirectories but not the empty ones. /S: Copies subdirectories except empty ones. /R:3: Numbrer of retries (3). /W:5: Latency time between retries (5).</value>
+    <value>/MIR: Mirrors the complete tree: copy and delete files so the destiny equals the origin. /COPY:DATSO: Enables you to copy data, attributes, timestamps, security and owner. /E: Copies subdirectories, including empty ones. /S: Copies subdirectories, except empty ones. /R:3: Numbrer of retries (3). /W:5: Latency time between retries (5).</value>
   </data>
   <data name="Form.Text" xml:space="preserve">
     <value>Robocopy</value>
