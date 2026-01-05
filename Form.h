@@ -74,6 +74,8 @@ protected:
 	void MenuItem_About_Click(Object^ pSender, EventArgs^ Args);
 	void MenuItem_Exit_Click(Object^ pSender, EventArgs^ Args);
 	void OKButton_Cliked(Object^ pSender, EventArgs^ Args);
+	void ProcOutputHandler(Object^ pSener, System::Diagnostics::DataReceivedEventArgs^ Args);
+	void AppendOutputLine(String^ line);
 	void btnOrigin_Click(Object^ pSender, EventArgs^ Args) {
 		FolderBrowserDialog^ fbd = gcnew FolderBrowserDialog();
 		if (fbd->ShowDialog() == System::Windows::Forms::DialogResult::OK) {

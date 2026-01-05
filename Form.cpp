@@ -224,6 +224,17 @@ void RoboCopyForm::IncrementProgress() {
 	}
 }
 
+void RoboCopyForm::ProcOutputHandler(Object^ pSener, System::Diagnostics::DataReceivedEventArgs^ Args) {
+	if (!String::IsNullOrEmpty(Args->Data)) {
+			Action<String^> ^ update = gcnew Action<String^>(this, &RoboCopyForm::AppendOutputLine);
+		this->BeginInvoke(update, Args->Data);
+	}
+}
+
+void RoboCopyForm::AppendOutputLine(String^ line) {
+	richTextBox->AppendText(line + Environment::NewLine);
+}
+
 void RoboCopyForm::OnProcessExit(int exitCode) {
 	btnCopy->Enabled = true;
 	pb1->Style = ProgressBarStyle::Continuous;
@@ -240,13 +251,13 @@ void RoboCopyForm::DoCopy(String^ origin, String^ destiny, String^ options) {
 	proc->StartInfo->FileName = Environment::SystemDirectory + "\\robocopy.exe";
 	proc->StartInfo->Arguments = "\"" + txtOrigin->Text + "\" \"" + txtDest->Text + "\" " + options;
 	proc->StartInfo->UseShellExecute = false;
+	proc->OutputDataReceived += gcnew DataReceivedEventHandler(this, &RoboCopyForm::ProcOutputHandler);
 	proc->StartInfo->RedirectStandardOutput = true;
 	proc->StartInfo->RedirectStandardError = true;
 	proc->StartInfo->CreateNoWindow = true;
 
 	try {
 		proc->Start();
-
 		while (!proc->StandardOutput->EndOfStream) {
 			String^ line = proc->StandardOutput->ReadLine();
 			if (!String::IsNullOrEmpty(line)) {
@@ -256,10 +267,9 @@ void RoboCopyForm::DoCopy(String^ origin, String^ destiny, String^ options) {
 				this->BeginInvoke(gcnew Action<String^>(this, &RoboCopyForm::AppendLine), line);
 			}
 		}
-
+		proc->BeginOutputReadLine();
 		proc->WaitForExit();
 		int exitCode = proc->ExitCode;
-
 		this->BeginInvoke(gcnew Action<int>(this, &RoboCopyForm::OnProcessExit), exitCode);
 
 	}
