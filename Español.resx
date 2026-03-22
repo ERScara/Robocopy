@@ -129,8 +129,17 @@
   <data name="btnExOr.Text" xml:space="preserve">
     <value>Browse...</value>
   </data>
+  <data name="Data.Text" xml:space="preserve">
+    <value>Robocopy Log:</value>
+  </data>
   <data name="Expl.Text" xml:space="preserve">
-    <value>/MIR: Mirrors the complete tree: copy and delete files so the destiny equals the origin. /COPY:DATSO: Enables you to copy data, attributes, timestamps, security and owner. /E: Copies subdirectories, including empty ones. /S: Copies subdirectories, except empty ones. /R:3: Numbrer of retries (3). /W:5: Latency time between retries (5).</value>
+    <value>/MIR: Mirrors the complete tree: copy and delete files so the destiny equals the origin. 
+/COPY:DATSO: Enables you to copy data, attributes, timestamps, security and owner. 
+/E: Copies subdirectories, including empty ones. 
+/S: Copies subdirectories, except empty ones. 
+/R:3: Numbrer of retries (3). 
+/W:5: Latency time between retries (5).
+/CREATE: Creates the structure of the origin in the destiny, but does not copy the origin.</value>
   </data>
   <data name="Form.Text" xml:space="preserve">
     <value>Robocopy</value>
@@ -161,6 +170,12 @@
   </data>
   <data name="MainMenu.Text" xml:space="preserve">
     <value>File</value>
+  </data>
+  <data name="PI.Text" xml:space="preserve">
+    <value>Print...</value>
+  </data>
+  <data name="Preview.Text" xml:space="preserve">
+    <value>Print Preview</value>
   </data>
   <data name="Settings.Text" xml:space="preserve">
     <value>Settings</value>

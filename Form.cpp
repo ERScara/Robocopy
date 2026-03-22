@@ -8,26 +8,32 @@ using namespace System::Globalization;
 using namespace System::Threading;
 using namespace System::Threading::Tasks;
 using namespace System::Resources;
+using namespace System::Drawing::Printing;
 using namespace System::Diagnostics;
 
 RoboCopyForm::RoboCopyForm()
 {
 	InitForm();
 	Setup_Menu();
+	printDocument1 = gcnew PrintDocument();
+	printDocument1->PrintPage += gcnew PrintPageEventHandler(this, &RoboCopyForm::PrintPage);
+	currentChar = 0;
 }
 
 void RoboCopyForm::InitForm()
 {
-	this->Text = "Robocopy";
-	this->Size = System::Drawing::Size(715, 500);
+	this->Text = L"Robocopy GUI";
+	this->Size = System::Drawing::Size(725, 500);
 	this->StartPosition = FormStartPosition::CenterScreen;
+	this->Icon = gcnew System::Drawing::Icon("RCGUI.ico");
 	this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedDialog;
+	this->FormClosing += gcnew FormClosingEventHandler(this, &RoboCopyForm::RoboCopyForm_FormClosing);
 	this->MaximizeBox = false;
 
 	TabControl^ tabCtrl = gcnew TabControl();
 	tabCtrl->Cursor = Cursors::Default;
 	tabCtrl->Location = Point(3, 5);
-	tabCtrl->Size = Drawing::Size(690, 430);
+	tabCtrl->Size = Drawing::Size(700, 430);
 
 	tstart = gcnew TabPage("Start");
 	lblExpl = gcnew Label();
@@ -39,9 +45,9 @@ void RoboCopyForm::InitForm()
 	tstart->Controls->Add(lblExpl);
 
 	Expl = gcnew Label();
-	Expl->Text = "/MIR: Mirrors the complete tree: copy and delete files so the destiny equals the origin.\n/COPY:DATSO: Enables you to copy data, attributes, timestamps, security and owner.\n/E: Copies subdirectories, including empty ones.\n/S: Copies subdirectories, except empty ones.\n/R:3: Numbrer of retries (3).\n/W:5: Latency time between retries (5).";
+	Expl->Text = "/MIR: Mirrors the complete tree: copy and delete files so the destiny equals the origin.\n/COPY:DATSO: Enables you to copy data, attributes, timestamps, security and owner.\n/E: Copies subdirectories, including empty ones.\n/S: Copies subdirectories, except empty ones.\n/R:3: Numbrer of retries (3).\n/W:5: Latency time between retries (5).\n/CREATE: Creates the structure of the origin in the destiny, but does not copy the origin.";
 	Expl->Location = Point(20, 190);
-	Expl->Size = Drawing::Size(200, 150);
+	Expl->Size = Drawing::Size(250, 150);
 	tstart->Controls->Add(Expl);
 
 	btnExOr = gcnew Button();
@@ -110,7 +116,7 @@ void RoboCopyForm::InitForm()
 
 	grbox = gcnew GroupBox();
 	grbox->Text = "Options";
-	grbox->Size = Drawing::Size(195, 100);
+	grbox->Size = Drawing::Size(200, 120);
 	grbox->BackColor = System::Drawing::Color::Transparent;
 	grbox->Location = Point(280, 210);
 	tstart->Controls->Add(grbox);
@@ -163,6 +169,14 @@ void RoboCopyForm::InitForm()
 	cbW->Location = Point(20, 40);
 	this->grbox->Controls->Add(cbW);
 
+	cbCreate = gcnew CheckBox();
+	cbCreate->Text = "/CREATE";
+	cbCreate->Cursor = Cursors::Hand;
+	cbCreate->BringToFront();
+	cbCreate->Checked = false;
+	cbCreate->Location = Point(20, 80);
+	this->grbox->Controls->Add(cbCreate);
+
 	pb1 = gcnew ProgressBar();
 	pb1->Visible = true;
 	btnCopy->Enabled = true;
@@ -174,13 +188,20 @@ void RoboCopyForm::InitForm()
 
 	tp = gcnew TabPage("Log");
 	richTextBox = gcnew RichTextBox();
-	richTextBox->Location = Point(50, 15);
+	richTextBox->Location = Point(100, 15);
 	richTextBox->Size = Drawing::Size(570, 380);
 	richTextBox->ReadOnly = true;
 	richTextBox->ScrollBars = RichTextBoxScrollBars::Vertical;
+	this->tp->Controls->Add(richTextBox);
+
+
+	data = gcnew Label();
+	data->Location = Point(7, 30);
+	data->Size = Drawing::Size(200, 200);
+	data->Text = "Robocopy Log:";
+	this->tp->Controls->Add(data);
 	
 
-	this->tp->Controls->Add(richTextBox);
 	tabCtrl->Controls->Add(tstart);
 	tabCtrl->Controls->Add(tp);
 	
@@ -258,25 +279,32 @@ void RoboCopyForm::DoCopy(String^ origin, String^ destiny, String^ options) {
 
 	try {
 		proc->Start();
-		while (!proc->StandardOutput->EndOfStream) {
-			String^ line = proc->StandardOutput->ReadLine();
-			if (!String::IsNullOrEmpty(line)) {
-				if (line->Contains("New File") || line->Contains("Copied")) {
-					this->BeginInvoke(gcnew MethodInvoker(this, &RoboCopyForm::IncrementProgress));
-				}
-				this->BeginInvoke(gcnew Action<String^>(this, &RoboCopyForm::AppendLine), line);
-			}
-		}
 		proc->BeginOutputReadLine();
 		proc->WaitForExit();
 		int exitCode = proc->ExitCode;
+
+		if (exitCode == 0) {
+			AppendLine("Robocopy finished successfully. No files were copied.");
+		}
+		else if (exitCode == 1) {
+			AppendLine("Roobocopy finished successfully. Some files were copied.");
+		}
+		else if (exitCode == 2) {
+			AppendLine("Robocopy finished successfully. Some files were copied and some were skipped.");
+		}
+		else if (exitCode >= 8) {
+			AppendLine("Robocopy finished with errors. Exit code: " + exitCode.ToString());
+		}
+		else {
+			AppendLine("Robocopy finished with an unknown exit code: " + exitCode.ToString());
+		}
+
 		this->BeginInvoke(gcnew Action<int>(this, &RoboCopyForm::OnProcessExit), exitCode);
 
 	}
 	catch (Exception^ ex) {
 		String^ msg = "Error running robocopy: " + ex->Message;
 		this->BeginInvoke(gcnew Action<String^>(this, &RoboCopyForm::AppendLine), msg);
-
 		this->BeginInvoke(gcnew MethodInvoker(this, &RoboCopyForm::IncrementProgress));
 	}
 }
@@ -289,6 +317,12 @@ void RoboCopyForm::Setup_Menu(void)
 	Item1 = gcnew MenuItem("&About...");
 	Item1->Click += gcnew EventHandler(this, &RoboCopyForm::MenuItem_About_Click);
 	fileMenu->MenuItems->Add(Item1);
+	printItem = gcnew MenuItem("&Print...");
+	printItem->Click += gcnew EventHandler(this, &RoboCopyForm::Print_Click);
+	previewItem = gcnew MenuItem("&Print Preview...");
+	previewItem->Click += gcnew EventHandler(this, &RoboCopyForm::PrintPreview_Click);
+	fileMenu->MenuItems->Add(previewItem);
+	fileMenu->MenuItems->Add(printItem);
 	Item2 = gcnew MenuItem("&Exit");
 	Item2->Click += gcnew EventHandler(this, &RoboCopyForm::MenuItem_Exit_Click);
 	fileMenu->MenuItems->Add(Item2);
@@ -312,7 +346,7 @@ void RoboCopyForm::Setup_Menu(void)
 void RoboCopyForm::MenuItem_About_Click(Object^ pSender, EventArgs^ Args)
 {
 	Form^ aboutForm = gcnew Form();
-	aboutForm->Text = L"About Robocopy";
+	aboutForm->Text = L"About Robocopy GUI";
 	aboutForm->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedDialog;
 	aboutForm->Size = System::Drawing::Size(370, 160);
 	aboutForm->BackColor = System::Drawing::Color::LightGray;
@@ -326,9 +360,9 @@ void RoboCopyForm::MenuItem_About_Click(Object^ pSender, EventArgs^ Args)
 	label1->Location = Point(90, 30);
 
 	Label^ label2 = gcnew Label();
-	Bitmap^ iconBitmap = gcnew Bitmap("RCGUI2.bmp");
+	Bitmap^ iconBitmap = gcnew Bitmap("RCGUI.bmp");
 	label2->Image = iconBitmap;
-	label2->Size = System::Drawing::Size(48, 48);
+	label2->Size = System::Drawing::Size(61, 61);
 	label2->Location = Point(15, 20);
 	label2->AutoSize = false;
 	label2->ImageAlign = ContentAlignment::MiddleLeft;
@@ -361,6 +395,48 @@ void RoboCopyForm::MenuItem_Exit_Click(Object^ pSender, EventArgs^ Args)
 	this->Close();
 }
 
+void RoboCopyForm::Print_Click(Object^ pSender, EventArgs^ Args) {
+	if (pSender == printItem) {
+		PrintDocument^ pdoc = gcnew PrintDocument();
+		PrintDialog^ pd = gcnew PrintDialog();
+		currentChar = 0;
+
+		pdoc->PrintPage += gcnew PrintPageEventHandler(this, &RoboCopyForm::PrintPage);
+		pd->Document = pdoc;
+
+		if (pd->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
+			pdoc->Print();
+		} else {
+			MessageBox::Show("Print Cancelled!", "Information", MessageBoxButtons::OK, MessageBoxIcon::Error);
+		}
+	}
+}
+
+Void RoboCopyForm::PrintPage(Object^ pSender, PrintPageEventArgs^ Args) {
+	System::Drawing::Font^ font = richTextBox->Font;
+	RectangleF rect = Args->MarginBounds;
+	StringFormat^ format = gcnew StringFormat();
+
+	int charsFitted;
+	int linesFilled;
+
+	Args->Graphics->MeasureString(richTextBox->Text->Substring(currentChar), font, rect.Size, format, charsFitted, linesFilled);
+	Args->Graphics->DrawString(richTextBox->Text->Substring(currentChar, charsFitted), font, Brushes::Black, rect, format);
+
+	currentChar += charsFitted;
+
+	array<wchar_t>^ textchars = richTextBox->Text->ToCharArray();
+	int len = textchars->Length;
+
+	if (currentChar < len) {
+		Args->HasMorePages = true;
+	}
+	else {
+		Args->HasMorePages = false;
+		currentChar = 0;
+	}
+}
+
 
 void RoboCopyForm::MenuItem_English_Click(Object^ pSender, EventArgs^ Args) {
 	Item1_1->Checked = true;
@@ -384,6 +460,9 @@ void RoboCopyForm::MenuItem_English_Click(Object^ pSender, EventArgs^ Args) {
 	submenu1->Text = resManager->GetString("SMenu.Text", englishCulture);
 	Item1_1->Text = resManager->GetString("I1.Text", englishCulture);
 	Item1_2->Text = resManager->GetString("I2.Text", englishCulture);
+	data->Text = resManager->GetString("Data.Text", englishCulture);
+	previewItem->Text = resManager->GetString("Preview.Text", englishCulture);
+	printItem->Text = resManager->GetString("PI.Text", englishCulture);
 	lblExpl->Text = resManager->GetString("lblExpl.Text", englishCulture);
 	Expl->Text = resManager->GetString("Expl.Text", englishCulture);
 	btnClose->Text = resManager->GetString("BtnClose.Text", englishCulture);
@@ -421,6 +500,9 @@ void RoboCopyForm::MenuItem_Spanish_Click(Object^ pSender, EventArgs^ Args) {
 	submenu1->Text = resManager->GetString("SMenu.Text", spanishCulture);
 	Item1_1->Text = resManager->GetString("I1.Text", spanishCulture);
 	Item1_2->Text = resManager->GetString("I2.Text", spanishCulture);
+	data->Text = resManager->GetString("Data.Text", spanishCulture);
+	printItem->Text = resManager->GetString("PI.Text", spanishCulture);
+	previewItem->Text = resManager->GetString("Preview.Text", spanishCulture);
 	lblExpl->Text = resManager->GetString("lblExpl.Text", spanishCulture);
 	Expl->Text = resManager->GetString("Expl.Text", spanishCulture);
 	btnClose->Text = resManager->GetString("BtnClose.Text", spanishCulture);

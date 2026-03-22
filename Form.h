@@ -10,7 +10,14 @@ using namespace System::Drawing;
 using namespace System::Resources;
 using namespace System::Reflection;
 using namespace System::ComponentModel;
+using namespace System::Drawing::Printing;
 using namespace System::Windows::Forms;
+using namespace System::Runtime::InteropServices;
+
+const unsigned int MB_OKCANCEL = 0x00000001;
+const unsigned int MB_ICONINFORMATION = 0x00000040;
+const unsigned int MB_ICONWARNING = 0x00000030;
+const int IDOK = 1;
 
 public ref class AppSettings {
 public:
@@ -29,12 +36,28 @@ public:
 	}
 };
 
+
+public ref class NativeMethods abstract sealed {
+public:
+	[DllImport("User32.dll", CharSet = CharSet::Auto)]
+		static int MessageBox(IntPtr hw, String^ text, String^ caption, unsigned int type);
+};
+
 ref class RoboCopyForm :public Form {
 public:
 	RoboCopyForm();
 	void InitForm();
 	void Setup_Menu();
 private:
+	Void PrintPage(Object^ sender, PrintPageEventArgs^ Args);
+	Void PrintPreview_Click(Object^ sender, EventArgs^ Args) {
+		PrintPreviewDialog^ previewDlg = gcnew PrintPreviewDialog();
+		previewDlg->Document = printDocument1;
+		previewDlg->Text = "Print Preview";
+		previewDlg->ShowDialog(this);
+	}
+	int currentChar;
+	PrintDocument^ printDocument1;
 	Button^ btnExOr;
 	Button^ btnExDes;
 	Button^ btnClose;
@@ -42,15 +65,23 @@ private:
 	Label^ lblOr;
 	Label^ lblDest;
 	Label^ Expl;
+	Label^ data;
+	Label^ pageLabel;
 	MainMenu^ menuBar;
+	MenuItem^ previewItem;
 	MenuItem^ fileMenu;
 	MenuItem^ settingsMenu;
 	MenuItem^ submenu1;
+	MenuItem^ printItem;
 	MenuItem^ Item1_1;
 	MenuItem^ Item1_2;
 	MenuItem^ Item1;
 	MenuItem^ Item2;
 	Button^ OKButton;
+	Button^ btnNext;
+	Button^ btnPrev;
+	Button^ btnZoomIn;
+	Button^ btnZoomOut;
 	GroupBox^ grbox;
 	CheckBox^ cbMir;
 	CheckBox^ cbE;
@@ -58,6 +89,7 @@ private:
 	CheckBox^ cbS;
 	CheckBox^ cbR;
 	CheckBox^ cbW;
+	CheckBox^ cbCreate;
 	Label^ lblExpl;
 	ProgressBar^ pb1;
 	RichTextBox^ richTextBox;
@@ -74,8 +106,21 @@ protected:
 	void MenuItem_About_Click(Object^ pSender, EventArgs^ Args);
 	void MenuItem_Exit_Click(Object^ pSender, EventArgs^ Args);
 	void OKButton_Cliked(Object^ pSender, EventArgs^ Args);
+	void Print_Click(Object^ pSender, EventArgs^ Args);
 	void ProcOutputHandler(Object^ pSener, System::Diagnostics::DataReceivedEventArgs^ Args);
 	void AppendOutputLine(String^ line);
+	void RoboCopyForm_FormClosing(Object^ pSender, FormClosingEventArgs^ Args) {
+		if (!ConfirmExit()) {
+			Args->Cancel = true;
+		}
+	}
+	bool ConfirmExit() {
+		String^ theText = L"Are you sure yo want to exit?";
+		String^ theCaption = L"Exiting...";
+		int result = NativeMethods::MessageBox(IntPtr::Zero, theText, theCaption, MB_OKCANCEL | MB_ICONINFORMATION);
+
+		return (result == IDOK);
+	}
 	void btnOrigin_Click(Object^ pSender, EventArgs^ Args) {
 		FolderBrowserDialog^ fbd = gcnew FolderBrowserDialog();
 		if (fbd->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
@@ -132,6 +177,7 @@ protected:
 		if (cbE->Checked) options += " /S";
 		if (cbR->Checked) options += " /R:3";
 		if (cbW->Checked) options += " /W:5";
+		if (cbCreate->Checked) options += " /CREATE";
 
 		return options;
 	}

@@ -129,8 +129,18 @@
   <data name="btnExOr.Text" xml:space="preserve">
     <value>Buscar...</value>
   </data>
+  <data name="Data.Text" xml:space="preserve">
+    <value>Registro de 
+Robocopy: </value>
+  </data>
   <data name="Expl.Text" xml:space="preserve">
-    <value>/MIR: Refleja el árbol completo: copia y elimina archivos para que el destino sea igual al origen. /COPY:DATSO: Permite copiar datos, atributos, marcas de tiempo, seguridad y propietario. /E: Copia subdirectorios, incluyendo los que están vacíos. /S: Copia subdirectorios, excepto los que están vacíos. /R:3: Número de reintentos (3). /W:5: Tiempo de latencia entre reintentos (5).</value>
+    <value>/MIR: Refleja el árbol completo: copia y elimina archivos para que el destino sea igual al origen. 
+/COPY:DATSO: Permite copiar datos, atributos, marcas de tiempo, seguridad y propietario. 
+/E: Copia subdirectorios, incluyendo los que están vacíos. 
+/S: Copia subdirectorios, excepto los que están vacíos. 
+/R:3: Número de reintentos (3). 
+/W:5: Tiempo de latencia entre reintentos (5).
+/CREATE: Crea la estructura del origen en el destino, pero no copia el origen.</value>
   </data>
   <data name="Form.Text" xml:space="preserve">
     <value>Robocopy</value>
@@ -161,6 +171,12 @@
   </data>
   <data name="MainMenu.Text" xml:space="preserve">
     <value>Archivo</value>
+  </data>
+  <data name="PI.Text" xml:space="preserve">
+    <value>Imprimir...</value>
+  </data>
+  <data name="Preview.Text" xml:space="preserve">
+    <value>Vista Previa de Impresión...</value>
   </data>
   <data name="Settings.Text" xml:space="preserve">
     <value>Ajustes</value>
